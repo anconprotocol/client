@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "downlevelIteration": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "outDir": "./lib",
+    "module": "CommonJS",
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "esnext"
+    ],
+    "importHelpers": true,
+    "declaration": true,
+    "strict": false,
+    "sourceMap": true,
+    "rootDir": "./",
+    "skipLibCheck": true
+  },
+  "typedocOptions": {
+    "entryPoints": [
+      "index.ts"
+    ],
+    "out": "docs"
+  },
+  "include": [
+    "*.ts",
+  ],
+  "exclude": [
+    "./types",
+    "./node_modules",
+    "./src/**/*.spec.ts",
+    "./**/__mocks__/**",
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "./node_modules/did-jwt-rsa/src/types.ts",
+    "./node_modules/@types/node/index.d.ts",
+  ]
+}
