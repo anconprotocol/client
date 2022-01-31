@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import Web3 from "web3";
-import { XDVNFT__factory } from "./types/ethers-contracts";
-import { AnconProtocol__factory } from "./types/ethers-contracts/factories/AnconProtocol__factory";
+import { XDVNFT__factory } from "../../types/ethers-contracts";
+import { AnconProtocol__factory } from "../../types/ethers-contracts/factories/AnconProtocol__factory";
 const AnconToken = require("../../contracts/ANCON.sol/ANCON.json");
 declare let window: any;
 
@@ -226,12 +226,12 @@ export default class AnconProtocol {
 
     const cid: string = response.cid;
     const ipfs: string = response.ipfs;
-    console.log("enroll", enrolling);
+    
     let result;
     switch (enrolling) {
       case true:
         const did = await this.getDidTransaction();
-        console.log(did);
+        
         result = {
           contentCid: did.contentHash as string,
           proofKey: did.key as string,
@@ -242,7 +242,7 @@ export default class AnconProtocol {
         break;
       default:
         const dag = await this.fetchDag(cid);
-        console.log(dag)
+        
         result = {
           proofCid: cid,
           ipfs,
@@ -266,7 +266,7 @@ export default class AnconProtocol {
       `https://api.ancon.did.pa/v0/proof/${key}?height=${height}`
     );
     const result = await rawResult.json();
-    console.log(result);
+   
     const abiedProof = await this.toAbiProof({
       ...result[0].Proof.exist,
     });
@@ -278,7 +278,7 @@ export default class AnconProtocol {
       `https://api.ancon.did.pa/v0/dagjson/${id}/`
     );
     const response = await rawResponse.json();
-    console.log(response);
+    
     const cid = await Object?.values(response.contentHash)[0];
     return {
       cid: cid as string,
@@ -310,7 +310,7 @@ export default class AnconProtocol {
 
     // get proof
     const getProof = await anconContractReader.getProof(UTF8_cid);
-    console.log("get", getProof);
+    
     if (getProof !== "0x") {
       return "proof already exist";
     }
@@ -320,9 +320,7 @@ export default class AnconProtocol {
       "https://api.ancon.did.pa/v0/proofs/lasthash"
     );
     const lasthash = await rawLastHash.json();
-    console.log(lasthash);
 
-    console.log(rawLastHash, lasthash);
 
     // make a Web3 prov to call the dai contract
 
@@ -338,48 +336,26 @@ export default class AnconProtocol {
     const hash = ethers.utils.hexlify(
       ethers.utils.base64.decode(lasthash.lastHash.hash)
     );
-
-    // wait for the header to be updated
-    // const filter = anconContractReader.filters.HeaderUpdated();
-    // const from = await this.prov.getBlockNumber();
-    // let result = await anconContractReader.queryFilter(filter, from);
-    // let time = Date.now();
-    // const maxTime = Date.now() + 180000;
-    // const relayHash = await anconContractReader.getProtocolHeader(
-    //   this.moniker
-    // );
-    // if (hash !== relayHash) {
-    //   console.log("hashes differ", height);
-    //   while (time < maxTime) {
-    //     result = await anconContractReader.queryFilter(filter, from);
-    //     console.log(result);
-    //     if (result.length > 0) {
-    //       break;
-    //     }
-    //     time = Date.now();
-    //     await sleep(10000);
-    //   }
-    // }
     await this.getPastEvents();
 
-    console.log("test");
+  
     // check the allowance
     const allowance = await dai.methods
       .allowance(this.address, this.anconAddress)
       .call();
-    console.log("test");
+  
     // enroll based on the network
     let enroll;
     switch (this.network.chainId) {
       case 97:
         if (allowance == 0) {
-          await dai.methods
-            .approve(contract2.address, "1000000000000000000000")
-            .send({
-              gasPrice: "22000000000",
-              gas: 400000,
-              from: this.address,
-            });
+          // await dai.methods
+          //   .approve(contract2.address, "1000000000000000000000")
+          //   .send({
+          //     gasPrice: "22000000000",
+          //     gas: 400000,
+          //     from: this.address,
+          //   });
         }
         enroll = await contract2.enrollL2Account(
           this.moniker,
@@ -395,13 +371,13 @@ export default class AnconProtocol {
         break;
       case 42:
         // if (allowance == 0) {
-        await dai.methods
-          .approve(contract2.address, "1000000000000000000000")
-          .send({
-            gasPrice: "400000000000",
-            gas: 700000,
-            from: this.address,
-          });
+        // await dai.methods
+        //   .approve(contract2.address, "1000000000000000000000")
+        //   .send({
+        //     gasPrice: "400000000000",
+        //     gas: 700000,
+        //     from: this.address,
+        //   });
         // }
         enroll = await contract2.enrollL2Account(
           this.moniker,
@@ -414,17 +390,17 @@ export default class AnconProtocol {
             from: this.address,
           }
         );
-        console.log("enrolled", enroll);
+        
         break;
       case 80001:
         // if (allowance == 0) {
-        await dai.methods
-          .approve(contract2.address, "1000000000000000000000")
-          .send({
-            gasPrice: "22000000000",
-            gas: 400000,
-            from: this.address,
-          });
+        // await dai.methods
+        //   .approve(contract2.address, "1000000000000000000000")
+        //   .send({
+        //     gasPrice: "22000000000",
+        //     gas: 400000,
+        //     from: this.address,
+        //   });
         // }
         enroll = await contract2.enrollL2Account(
           this.moniker,
@@ -453,7 +429,7 @@ export default class AnconProtocol {
    * @returns returns true when the protocol is updated
    */
   async getPastEvents() {
-    console.log("contract", this.anconAddress);
+   
     // instiate the contract
     const AnconReader = await AnconProtocol__factory.connect(
       this.anconAddress,
@@ -479,14 +455,9 @@ export default class AnconProtocol {
     const decodedlastHash = ethers.utils.hexlify(
       ethers.utils.base64.decode(lasthash.lastHash.hash)
     );
-    console.log("[MONIKER]", this.moniker);
-    console.log("[LastHash]", lasthash.lastHash.version);
-    // let relayHash = await AnconReader.relayerHashTable(
-    //   this.moniker,
-    //   lasthash.lastHash.version
-    // );
+  
     let sequence = lasthash.lastHash.version;
-    // console.log(decodedlastHash, relayHash);
+   
     let time = Date.now();
     const maxTime = Date.now() + 120000;
     let relayHash = "0x";
@@ -494,13 +465,6 @@ export default class AnconProtocol {
       try {
         sequence += 1;
         result = await AnconReader.queryFilter(filter, from);
-        // relayHash = await AnconReader.relayerHashTable(
-        //   this.moniker,
-        //   lasthash.lastHash.version
-        // // );
-        // console.log(result, relayHash);
-        // console.log(decodedlastHash == relayHash);
-        // if (decodedlastHash == relayHash) {
         if (result.length > 0) {
           break;
         }
@@ -514,7 +478,7 @@ export default class AnconProtocol {
   }
 
   async mintNft(hexData: string, userProofKey: string) {
-    console.log("beggining minting");
+   
 
     const xdvReader = XDVNFT__factory.connect(
       this.xdvnftAdress,
@@ -552,25 +516,15 @@ export default class AnconProtocol {
      */
     // prepare packet proof
     const packetProof = await this.getProof(userProofKey, version);
-    console.log("packet");
+    
     // prepare user proof
     const userProof = await this.getProof(did.key, version);
-    console.log("user");
+   
     // start minting
     let mint;
     switch (this.network.chainId) {
       case 97:
       case 80001:
-        // tries two times in case it fails
-        if (allowance == 0) {
-          await dai.methods
-            .approve(xdvSigner.address, "1000000000000000000000")
-            .send({
-              gasPrice: "22000000000",
-              gas: 400000,
-              from: this.address,
-            });
-        }
         try {
           mint = await xdvSigner.mintWithProof(
             hexData,
@@ -588,15 +542,6 @@ export default class AnconProtocol {
         }
         break;
       case 42:
-        // if (allowance == 0) {
-        await dai.methods
-          .approve(xdvSigner.address, "1000000000000000000000")
-          .send({
-            gasPrice: "200000000000",
-            gas: 700000,
-            from: this.address,
-          });
-        // }
         // tries two times in case it fails
         try {
           mint = await xdvSigner.mintWithProof(
@@ -645,7 +590,7 @@ export default class AnconProtocol {
       `https://api.ancon.did.pa/v0/dag/${cid}/?namespace=anconprotocol/users/${address}`
     );
     const data = await rawData.json();
-    console.log(data);
+    
     data["root"] = await await Object?.values(data.root)[0];
     return data;
   }
