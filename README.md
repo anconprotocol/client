@@ -4,7 +4,7 @@
 
 ## API
 
-### EnrollL2Account
+### EnrollL2Account()
 
     > enrolls the user into Ancon Protocol, once the user has been enrolled he can interact with the protocol.
 
@@ -21,7 +21,7 @@
 | :----: | :----: | :-----------------: |
 | enroll | object | transaction receipt |
 
-### getNetwork
+### getNetwork()
 
     > returns the network the user is currently in
 
@@ -35,7 +35,7 @@
 | :-------------: | :----: | :-----------------------------------: |
 | transactionHash | string | any transaction hash made by the user |
 
-### postProof
+### postProof()
 
     > handles the post requests to the Dag Store
 
@@ -57,7 +57,7 @@
 |  proofCid   | string | proof cid that can be used to fetch the proof posted |
 |    ipfs     | string |                 shows the ipfs cids                  |
 
-### getProof
+### getProof()
 
     > fetch the proof, passes it trough abi proof and return it ready to be used
 
@@ -78,7 +78,7 @@
 |  proofCid   | string | proof cid that can be used to fetch the proof posted |
 |    ipfs     | string |                 shows the ipfs cids                  |
 
-### fetchDag
+### fetchDag()
 
     > fetch the dag store with a cid
 
@@ -96,11 +96,11 @@
 |  proofKey   | string |  proof key from that cid change   |
 | proofHeight | string | proof height from that cid change |
 
-### getPastEvents
+### getPastEvents()
 
     > event waiter for the relayer, returns true once it was completed
 
-### mintNft
+### mintNft()
 
     > fetch the dag store with a cid
 
@@ -117,7 +117,7 @@
 | :--: | :----: | :----------------------: |
 | mint | object | mint transaction receipt |
 
-### getMetadata
+### getMetadata()
 
     > gets metadata from the user
 
