@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import Web3 from "web3";
-import { XDVNFT__factory } from "../../types/ethers-contracts";
-import { AnconProtocol__factory } from "../../types/ethers-contracts/factories/AnconProtocol__factory";
+import { XDVNFT__factory } from "./types/ethers-contracts";
+import { AnconProtocol__factory } from "./types/ethers-contracts/factories/AnconProtocol__factory";
 const AnconToken = require("../../contracts/ANCON.sol/ANCON.json");
 declare let window: any;
 
