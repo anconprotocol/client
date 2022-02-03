@@ -5,6 +5,7 @@ import { AnconProtocol__factory } from "./types/ethers-contracts/factories/Ancon
 const AnconToken = require("../../contracts/ANCON.sol/ANCON.json");
 declare let window: any;
 
+
 export default class AnconProtocol {
   prov: ethers.providers.Web3Provider;
   network: ethers.providers.Network | any;
@@ -26,7 +27,9 @@ export default class AnconProtocol {
     provider: any,
     address: string,
     moniker: string,
-    anconEndpoint: string
+    anconEndpoint: string,
+    anconAddress: string,
+    xdvnftAdress: string,
   ) {
     this.provider = provider;
     this.prov = new ethers.providers.Web3Provider(provider);
@@ -35,9 +38,9 @@ export default class AnconProtocol {
     this.signer = this.prov.getSigner();
     this.network = "";
     this.postProofCid = "";
-    this.anconAddress = "";
+    this.anconAddress = anconAddress;
     this.daiAddress = "";
-    this.xdvnftAdress = "";
+    this.xdvnftAdress = xdvnftAdress;
     this.moniker = moniker;
     this.anconEndpoint = anconEndpoint;
   }
@@ -51,7 +54,7 @@ export default class AnconProtocol {
   async getNetwork() {
     const network = await this.prov.getNetwork();
     this.network = network;
-    await this.getContractAddresses(network);
+    // await this.getContractAddresses(network);
   }
 
   async getContractAddresses(network: any) {
@@ -460,10 +463,6 @@ export default class AnconProtocol {
       this.signer
     );
 
-    const dai = new this.provWeb3.eth.Contract(
-      AnconToken.abi,
-      this.daiAddress
-    );
 
     await sleep(7000);
 
