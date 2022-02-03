@@ -1,8 +1,8 @@
 {
   "name": "anconprotocol-client",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "client utilities for ancon protocol nodes API",
-  "main": "index.ts",
+  "main": "AnconProtocol.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
