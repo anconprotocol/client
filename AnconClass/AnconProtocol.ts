@@ -2,9 +2,8 @@ import { ethers } from "ethers";
 import Web3 from "web3";
 import { XDVNFT__factory } from "./types/ethers-contracts";
 import { AnconProtocol__factory } from "./types/ethers-contracts/factories/AnconProtocol__factory";
-const AnconToken = require("../../contracts/ANCON.sol/ANCON.json");
-declare let window: any;
 
+declare let window: any;
 
 export default class AnconProtocol {
   prov: ethers.providers.Web3Provider;
@@ -14,7 +13,6 @@ export default class AnconProtocol {
   address: string;
   provider: any;
   anconAddress: string;
-  daiAddress: string;
   xdvnftAdress: string;
   provWeb3: Web3;
   moniker: string;
@@ -29,7 +27,7 @@ export default class AnconProtocol {
     moniker: string,
     anconEndpoint: string,
     anconAddress: string,
-    xdvnftAdress: string,
+    xdvnftAdress: string
   ) {
     this.provider = provider;
     this.prov = new ethers.providers.Web3Provider(provider);
@@ -39,7 +37,6 @@ export default class AnconProtocol {
     this.network = "";
     this.postProofCid = "";
     this.anconAddress = anconAddress;
-    this.daiAddress = "";
     this.xdvnftAdress = xdvnftAdress;
     this.moniker = moniker;
     this.anconEndpoint = anconEndpoint;
@@ -57,39 +54,6 @@ export default class AnconProtocol {
     // await this.getContractAddresses(network);
   }
 
-  async getContractAddresses(network: any) {
-    let anconAddress: any;
-    let daiAddress: any;
-    let xdvnftAdress: any;
-    switch (this.network.chainId) {
-      // bnbt
-      case 97:
-        anconAddress = process.env.NEXT_PUBLIC_ANCON_bnbt;
-        daiAddress = process.env.NEXT_PUBLIC_DAI_bnbt;
-        xdvnftAdress = process.env.NEXT_PUBLIC_XDVNFT_bnbt;
-        break;
-      // kovan
-      case 42:
-        anconAddress = process.env.NEXT_PUBLIC_ANCON_kovan;
-        daiAddress = process.env.NEXT_PUBLIC_DAI_kovan;
-        xdvnftAdress = process.env.NEXT_PUBLIC_XDVNFT_kovan;
-        break;
-      // mumbai
-      case 80001:
-        anconAddress = process.env.NEXT_PUBLIC_ANCON_mumbai;
-        daiAddress = process.env.NEXT_PUBLIC_DAI_mumbai;
-        xdvnftAdress = process.env.NEXT_PUBLIC_XDVNFT_mumbai;
-        break;
-    }
-    this.anconAddress = anconAddress;
-    this.daiAddress = daiAddress;
-    this.xdvnftAdress = xdvnftAdress;
-    return {
-      ancon: this.anconAddress,
-      dai: this.daiAddress,
-      xdv: this.xdvnftAdress,
-    };
-  }
   /**
    *
    * @param address address to get the did from
@@ -463,7 +427,6 @@ export default class AnconProtocol {
       this.signer
     );
 
-
     await sleep(7000);
 
     const did = await this.getDidTransaction();
@@ -553,7 +516,6 @@ export default class AnconProtocol {
     const rawResponse = await fetch(
       `https://${this.anconEndpoint}did/did:ethr:${this.network.name}:${this.address}`
     );
-    const response = await rawResponse.json();
     if (rawResponse.status === 400) {
       return false;
     }
@@ -597,15 +559,15 @@ export default class AnconProtocol {
       this.xdvnftAdress,
       this.prov
     );
-    console.log(typeof this.moniker, this.moniker)
-    console.log(proof.key, proof.value)
+    console.log(typeof this.moniker, this.moniker);
+    console.log(proof.key, proof.value);
     const verify = await anconReader.verifyProofWithKV(
       this.moniker,
       proof.key,
       proof.value,
       proof
-    )
-    console.log('[verify]',verify)
+    );
+    console.log("[verify]", verify);
   }
 }
 
