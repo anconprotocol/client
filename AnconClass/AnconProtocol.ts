@@ -174,7 +174,7 @@ export default class AnconProtocol {
     const transaction: any = await this.prov.getTransaction(
       transactionHash
     );
-    
+    console.log("transaction", transaction);
     // joins the sig
     const sig = ethers.utils.joinSignature({
       r: transaction.r,
@@ -250,6 +250,7 @@ export default class AnconProtocol {
         break;
       default:
         const dag = await this.fetchDag(cid);
+        console.log("dag", dag);
         if (dag.cid == "error") {
           result = {
             proofCid: cid,
@@ -295,9 +296,8 @@ export default class AnconProtocol {
     const rawResponse = await fetch(
       `https://${this.anconEndpoint}dagjson/${id}/`
     );
-    if (rawResponse.status != 400) {
-      const response = await rawResponse.json();
-
+    const response = await rawResponse.json();
+    if (response.error != "cid too short") {
       const cid = await Object?.values(response.contentHash)[0];
       return {
         cid: cid as string,
@@ -340,22 +340,8 @@ export default class AnconProtocol {
       return "proof already exist";
     }
 
-    // check the hashes
-    const rawLastHash = await fetch(
-      `https://${this.anconEndpoint}proofs/lasthash`
-    );
-    const lasthash = await rawLastHash.json();
-
-    // make a Web3 prov to call the dai contract
-
-    const dai = new this.provWeb3.eth.Contract(
-      AnconToken.abi,
-      this.daiAddress
-    );
-
     // get the height
     const did = await this.getDidTransaction();
-    const height = did.height;
 
     await this.getPastEvents();
 
@@ -455,6 +441,7 @@ export default class AnconProtocol {
       try {
         sequence += 1;
         result = await AnconReader.queryFilter(filter, from);
+        console.log(result);
         if (result.length > 0) {
           break;
         }
@@ -497,7 +484,6 @@ export default class AnconProtocol {
     // prepare user proof
     const userProof = await this.getProof(did.key, version);
 
- 
     // estimate gas
     const gasLimit = await xdvSigner.estimateGas.mintWithProof(
       hexData,
@@ -507,7 +493,7 @@ export default class AnconProtocol {
     const decimalRate = gasLimit.toNumber() * 1.2;
     const rate = Math.floor(decimalRate);
     // start minting
-
+    console.log("estimated ready", decimalRate, rate);
     let mint;
     switch (this.network.chainId) {
       case 97:
@@ -577,12 +563,50 @@ export default class AnconProtocol {
 
   async getMetadata(cid: string, address: string) {
     const rawData = await fetch(
-      `https://${this.anconEndpoint}dag/${cid}/?namespace=anconprotocol/users/${address}`
+      `https://${this.anconEndpoint}dag/${cid}/contentHash`
     );
     const data = await rawData.json();
 
     data["root"] = await await Object?.values(data.root)[0];
     return data;
+  }
+
+  async uploadFile(file: any) {
+    const body = new FormData();
+    console.log(file);
+    body.append("file", file[0]);
+    let ipfsRes;
+    let ipfsResBody;
+    try {
+      ipfsRes = await fetch(
+        "https://" + this.anconEndpoint + "file",
+        {
+          method: "post",
+          body: body,
+        }
+      );
+      console.log(ipfsRes);
+      ipfsResBody = await ipfsRes.json();
+    } catch (error) {
+      console.log("confirmation error", error);
+    }
+    return ipfsResBody.cid;
+  }
+
+  async verifyBlockchainExistence(proof: any) {
+    const anconReader = AnconProtocol__factory.connect(
+      this.xdvnftAdress,
+      this.prov
+    );
+    console.log(typeof this.moniker, this.moniker)
+    console.log(proof.key, proof.value)
+    const verify = await anconReader.verifyProofWithKV(
+      this.moniker,
+      proof.key,
+      proof.value,
+      proof
+    )
+    console.log('[verify]',verify)
   }
 }
 
