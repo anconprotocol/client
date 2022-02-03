@@ -61,7 +61,7 @@ export default class AnconProtocol {
    */
   async getDidTransaction() {
     const rawDid = await fetch(
-      `https://${this.anconEndpoint}did/raw:did:ethr:${this.network.name}:${this.address}`
+      `${this.anconEndpoint}did/raw:did:ethr:${this.network.name}:${this.address}`
     );
 
     const encodedDid = await rawDid.json();
@@ -74,7 +74,7 @@ export default class AnconProtocol {
 
   async signMessage() {
     const rawDid = await fetch(
-      `https://${this.anconEndpoint}did/raw:did:ethr:${this.network.name}:${this.address}`
+      `${this.anconEndpoint}did/raw:did:ethr:${this.network.name}:${this.address}`
     );
     const encodedDid = await rawDid.json();
     return encodedDid;
@@ -141,7 +141,6 @@ export default class AnconProtocol {
     const transaction: any = await this.prov.getTransaction(
       transactionHash
     );
-    console.log("transaction", transaction);
     // joins the sig
     const sig = ethers.utils.joinSignature({
       r: transaction.r,
@@ -190,7 +189,7 @@ export default class AnconProtocol {
     enrolling?: boolean
   ) {
     //   url to be called
-    const url = `https://${this.anconEndpoint}${proofEndpoint}`;
+    const url = `${this.anconEndpoint}${proofEndpoint}`;
 
     // fetch
     const rawResponse = await fetch(url, requestOptions);
@@ -217,7 +216,7 @@ export default class AnconProtocol {
         break;
       default:
         const dag = await this.fetchDag(cid);
-        console.log("dag", dag);
+
         if (dag.cid == "error") {
           result = {
             proofCid: cid,
@@ -249,7 +248,7 @@ export default class AnconProtocol {
    */
   async getProof(key: string, height: string) {
     const rawResult = await fetch(
-      `https://${this.anconEndpoint}proof/${key}?height=${height}`
+      `${this.anconEndpoint}proof/${key}?height=${height}`
     );
     const result = await rawResult.json();
 
@@ -261,7 +260,7 @@ export default class AnconProtocol {
 
   async fetchDag(id: string) {
     const rawResponse = await fetch(
-      `https://${this.anconEndpoint}dagjson/${id}/`
+      `${this.anconEndpoint}dagjson/${id}/`
     );
     const response = await rawResponse.json();
     if (response.error != "cid too short") {
@@ -286,7 +285,6 @@ export default class AnconProtocol {
    * @returns the result of the enrollment
    */
   async enrollL2Account(cid: string, proof: any) {
-    console.log("enrolling to L2");
     // try {
     const anconContractReader = AnconProtocol__factory.connect(
       this.anconAddress,
@@ -307,9 +305,6 @@ export default class AnconProtocol {
       return "proof already exist";
     }
 
-    // get the height
-    const did = await this.getDidTransaction();
-
     await this.getPastEvents();
 
     // estimate gas
@@ -321,50 +316,19 @@ export default class AnconProtocol {
     );
     const decimalRate = gasLimit.toNumber() * 1.2;
     const rate = Math.floor(decimalRate);
-    // enroll based on the network
-    let enroll;
-    switch (this.network.chainId) {
-      case 97:
-        enroll = await contract2.enrollL2Account(
-          this.moniker,
-          proof.key,
-          UTF8_cid,
-          proof,
-          {
-            gasLimit: rate.toString(),
-          }
-        );
 
-        break;
-      case 42:
-        enroll = await contract2.enrollL2Account(
-          this.moniker,
-          proof.key,
-          UTF8_cid,
-          proof,
-          {
-            gasPrice: "400000000000",
-            gasLimit: 900000,
-            from: this.address,
-          }
-        );
-        break;
-      case 80001:
-        enroll = await contract2.enrollL2Account(
-          this.moniker,
-          proof.key,
-          UTF8_cid,
-          proof,
-          {
-            gasLimit: rate.toString(),
-          }
-        );
-
-        break;
-    }
+    // enroll account
+    const enroll = await contract2.enrollL2Account(
+      this.moniker,
+      proof.key,
+      UTF8_cid,
+      proof,
+      {
+        gasLimit: rate.toString(),
+      }
+    );
     await enroll?.wait(1);
-    console.log("enrolled");
-    console.log(enroll);
+
     return enroll;
   }
 
@@ -392,7 +356,7 @@ export default class AnconProtocol {
 
     // checking hashes
     const rawLastHash = await fetch(
-      `https://${this.anconEndpoint}proofs/lasthash`
+      `${this.anconEndpoint}proofs/lasthash`
     );
     const lasthash = await rawLastHash.json();
     const decodedlastHash = ethers.utils.hexlify(
@@ -408,7 +372,7 @@ export default class AnconProtocol {
       try {
         sequence += 1;
         result = await AnconReader.queryFilter(filter, from);
-        console.log(result);
+
         if (result.length > 0) {
           break;
         }
@@ -433,7 +397,7 @@ export default class AnconProtocol {
 
     // get the last hash
     const rawLastHash = await fetch(
-      `https://${this.anconEndpoint}proofs/lasthash`
+      `${this.anconEndpoint}proofs/lasthash`
     );
     const lasthash = await rawLastHash.json();
     const version = lasthash.lastHash.version;
@@ -455,66 +419,32 @@ export default class AnconProtocol {
     const decimalRate = gasLimit.toNumber() * 1.2;
     const rate = Math.floor(decimalRate);
     // start minting
-    console.log("estimated ready", decimalRate, rate);
+
     let mint;
-    switch (this.network.chainId) {
-      case 97:
-      case 80001:
-        try {
-          mint = await xdvSigner.mintWithProof(
-            hexData,
-            userProof,
-            packetProof,
-            {
-              gasLimit: rate.toString(),
-            }
-          );
-        } catch (error) {
-          sleep(5000);
-          console.log("failed, trying again...", error);
-          mint = await xdvSigner.mintWithProof(
-            hexData,
-            userProof,
-            packetProof
-          );
+    try {
+      mint = await xdvSigner.mintWithProof(
+        hexData,
+        userProof,
+        packetProof,
+        {
+          gasLimit: rate.toString(),
         }
-        break;
-      case 42:
-        // tries two times in case it fails
-        try {
-          mint = await xdvSigner.mintWithProof(
-            hexData,
-            userProof,
-            packetProof,
-            {
-              gasPrice: "200000000000",
-              gasLimit: rate.toString(),
-              from: this.address,
-            }
-          );
-          console.log(mint);
-        } catch (error) {
-          console.log("failed, trying again...", error);
-          sleep(5000);
-          mint = await xdvSigner.mintWithProof(
-            hexData,
-            userProof,
-            packetProof,
-            {
-              gasPrice: "200000000000",
-              gasLimit: 900000,
-              from: this.address,
-            }
-          );
-        }
-        break;
+      );
+    } catch (error) {
+      sleep(5000);
+      console.log("failed, trying again...", error);
+      mint = await xdvSigner.mintWithProof(
+        hexData,
+        userProof,
+        packetProof
+      );
     }
     return mint;
   }
 
   async getDomainName() {
     const rawResponse = await fetch(
-      `https://${this.anconEndpoint}did/did:ethr:${this.network.name}:${this.address}`
+      `${this.anconEndpoint}did/did:ethr:${this.network.name}:${this.address}`
     );
     if (rawResponse.status === 400) {
       return false;
@@ -524,7 +454,7 @@ export default class AnconProtocol {
 
   async getMetadata(cid: string, address: string) {
     const rawData = await fetch(
-      `https://${this.anconEndpoint}dag/${cid}/contentHash`
+      `${this.anconEndpoint}dag/${cid}/contentHash`
     );
     const data = await rawData.json();
 
@@ -534,19 +464,16 @@ export default class AnconProtocol {
 
   async uploadFile(file: any) {
     const body = new FormData();
-    console.log(file);
+
     body.append("file", file[0]);
     let ipfsRes;
     let ipfsResBody;
     try {
-      ipfsRes = await fetch(
-        "https://" + this.anconEndpoint + "file",
-        {
-          method: "post",
-          body: body,
-        }
-      );
-      console.log(ipfsRes);
+      ipfsRes = await fetch("" + this.anconEndpoint + "file", {
+        method: "post",
+        body: body,
+      });
+
       ipfsResBody = await ipfsRes.json();
     } catch (error) {
       console.log("confirmation error", error);
@@ -567,7 +494,6 @@ export default class AnconProtocol {
       proof.value,
       proof
     );
-    console.log("[verify]", verify);
   }
 }
 
